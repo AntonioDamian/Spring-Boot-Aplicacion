@@ -1,5 +1,6 @@
 package com.damian.springbootApp.repository;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.repository.CrudRepository;
@@ -11,7 +12,7 @@ import com.damian.springbootApp.entity.User;
 public interface UserRepository extends CrudRepository<User,Long> {
 
 	
-	public Set findByUsername(String username);
+	public Optional<User> findByUsername(String username);
 	
-	public Set findByIdAndPassword(Long id, String password);
+	public Optional<User> findByIdAndPassword(Long id, String password);
 }
