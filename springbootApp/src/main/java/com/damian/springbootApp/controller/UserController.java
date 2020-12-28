@@ -110,6 +110,16 @@ public class UserController {
 		
 	}
 	
+	@GetMapping("/deleteUser/{id}")
+	public String deleteUser(Model model, @PathVariable(name="id") Long id) {
+		try {
+			userService.deleteUser(id);
+		} catch (Exception e) {
+			model.addAttribute("deleteError","The user could not be deleted.");
+		}
+		return getUserForm(model);
+	}
+	
 	@GetMapping("/userForm/cancel")
 	public String cancelEditUser(ModelMap model) {
 		return "redirect:/userForm";
