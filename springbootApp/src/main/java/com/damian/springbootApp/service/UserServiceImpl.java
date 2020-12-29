@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.damian.springbootApp.Excepciones.UsernameOrIdNotFound;
 import com.damian.springbootApp.dto.ChangePasswordForm;
 import com.damian.springbootApp.entity.User;
 import com.damian.springbootApp.repository.UserRepository;
@@ -61,8 +62,8 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public User getUserById(Long id) throws Exception {
-		User user = repository.findById(id).orElseThrow(() -> new Exception("User does not exist"));
+	public User getUserById(Long id) throws  UsernameOrIdNotFound {
+		User user = repository.findById(id).orElseThrow(() -> new UsernameOrIdNotFound("El Id del usuario no existe"));
 		return user;
 	}
 
@@ -89,9 +90,10 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	@PreAuthorize("hasAnyRole('ROLE_ADMIN')")
-	public void deleteUser(Long id) throws Exception {
-		User user = repository.findById(id)
-				.orElseThrow(() -> new Exception("UsernotFound in deleteUser -" + this.getClass().getName()));
+	public void deleteUser(Long id) throws  UsernameOrIdNotFound {
+//		User user = repository.findById(id)
+//				.orElseThrow(() -> new Exception("UsernotFound in deleteUser -" + this.getClass().getName()));
+		User user=getUserById(id);
 
 		repository.delete(user);
 
@@ -107,10 +109,14 @@ public class UserServiceImpl implements UserService {
 		Object roles = null;
 		if (principal instanceof UserDetails) {
 			loggedUser = (UserDetails) principal;
-
-			roles = loggedUser.getAuthorities().stream().filter(x -> role.equals(x.getAuthority())).findFirst()
-					.orElse(null); // loggedUser = null;
-		}
+//
+//			roles = loggedUser.getAuthorities().stream().filter(x -> role.equals(x.getAuthority())).findFirst()
+//					.orElse(null); // loggedUser = null;
+			
+			loggedUser.getAuthorities().stream()
+								.filter(x -> "ADMIN".equals(x.getAuthority() ))      
+								.findFirst().orElse(null); //loggedUser = null;
+							}
 		return roles != null ? true : false;
 	}
 
@@ -127,12 +133,10 @@ public class UserServiceImpl implements UserService {
 		}
 
 		if (!form.getNewPassword().equals(form.getConfirmPassword())) {
-			throw new Exception("Nuevo Password y Current Password no coinciden.");
+			throw new Exception("Nuevo Password y Confirm Password no coinciden.");
 		}
 
-		String encodePassword =bCryptPasswordEncoder.encode(form.getConfirmPassword());
-		
-		//user.setPassword(form.getNewPassword());
+		String encodePassword = bCryptPasswordEncoder.encode(form.getNewPassword());
 		user.setPassword(encodePassword);
 		return repository.save(user);
 	}
