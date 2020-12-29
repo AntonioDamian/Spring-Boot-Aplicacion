@@ -31,7 +31,7 @@ public class UserController {
 	@Autowired 
 	UserService userService;
 	
-	@GetMapping("/")
+	@GetMapping({"/","/login"})
 	public String index() {
 		return "index";
 	}
@@ -60,7 +60,7 @@ public class UserController {
 				try {
 					userService.createUser(user);
 					model.addAttribute("userForm", new User());
-					model.addAttribute("listTab","active");
+					model.addAttribute("listTab","active"); 
 
 				} catch (Exception e) {
 					model.addAttribute("formErrorMessage",e.getMessage());
