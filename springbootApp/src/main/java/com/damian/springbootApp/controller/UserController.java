@@ -1,5 +1,7 @@
 package com.damian.springbootApp.controller;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import com.damian.springbootApp.Excepciones.CustomeFieldValidationException;
 import com.damian.springbootApp.Excepciones.UsernameOrIdNotFound;
 import com.damian.springbootApp.dto.ChangePasswordForm;
+import com.damian.springbootApp.entity.Role;
 import com.damian.springbootApp.entity.User;
 import com.damian.springbootApp.repository.RoleRepository;
 import com.damian.springbootApp.service.UserService;
@@ -38,10 +41,41 @@ public class UserController {
 		return "index";
 	}
 	
-	@GetMapping("/userForm")
-	public String getUserForm() {
-		return "user-form/user-view";
-	}	
+	
+	
+	@GetMapping("/signup")
+	public String signup(Model model) {
+		Role userRole = roleRepository.findByName("USER");
+		List<Role> roles = Arrays.asList(userRole);
+
+		model.addAttribute("signup",true);
+	
+		model.addAttribute("userForm", new User());
+		model.addAttribute("roles",roles);
+		return "user-form/user-signup";
+	}
+
+	@PostMapping("/signup")
+	public String signupAction(@Valid @ModelAttribute("userForm")User user, BindingResult result, ModelMap model) {
+		Role userRole = roleRepository.findByName("USER");
+		List<Role> roles = Arrays.asList(userRole);
+		model.addAttribute("userForm", user);
+		model.addAttribute("roles",roles);
+		model.addAttribute("signup",true);
+
+		if(result.hasErrors()) {
+			return "user-form/user-signup";
+		}else {
+			try {
+				userService.createUser(user);
+			} catch (CustomeFieldValidationException cfve) {
+				result.rejectValue(cfve.getFieldName(), null, cfve.getMessage());
+			}catch (Exception e) {
+				model.addAttribute("formErrorMessage",e.getMessage());
+			}
+		}
+		return index();
+	}
 	
 	@GetMapping("/userForm")
 	public String getUserForm(Model model) {
